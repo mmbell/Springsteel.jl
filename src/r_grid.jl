@@ -354,3 +354,40 @@ function num_columns(grid::R_Grid)
 
     return 0
 end
+
+function getRegularGridpoints(grid::R_Grid)
+
+    # Return an array of regular gridpoint locations spaced at r_grid_incr intervals
+    num_gridpoints = Int64(ceil((grid.params.xmax - grid.params.xmin) / grid.params.r_incr_out)) + 1
+    gridpoints = zeros(Float64, num_gridpoints)
+    for r = 1:num_gridpoints
+        r_m = grid.params.xmin + (r-1)*grid.params.r_incr_out
+        if r_m > grid.params.xmax
+            r_m = grid.params.xmax
+        end
+        gridpoints[r] = r_m
+    end
+    return gridpoints
+end
+
+function regularGridTransform(grid::R_Grid, gridpoints::Array{Float64})
+
+    # Transform from the spectral to grid space
+    # For R grid, the only varying dimension is the variable name
+
+    physical = zeros(Float64, length(gridpoints), 
+        length(values(grid.params.vars)),3)
+    
+    for i in eachindex(grid.splines)
+        grid.splines[i].b .= view(grid.spectral,:,i)
+        SAtransform!(grid.splines[i])
+        
+        # Assign the grid array
+        SItransform(grid.splines[i],gridpoints,view(physical,:,i,1))
+        SIxtransform(grid.splines[i],gridpoints,view(physical,:,i,2))
+        SIxxtransform(grid.splines[i],gridpoints,view(physical,:,i,3))
+    end
+    
+    return physical
+end
+

@@ -37,8 +37,12 @@ Base.@kwdef struct GridParameters
     l_q::real = 2.0
     BCL::Dict = CubicBSpline.R0
     BCR::Dict = CubicBSpline.R0
+    ymin::real = 0.0
+    ymax::real = 2 * π
     lDim::int = 0
     b_lDim::int = 0
+    BCU::Dict = Fourier.PERIODIC
+    BCB::Dict = Fourier.PERIODIC
     zmin::real = 0.0
     zmax::real = 0.0
     zDim::int = 0
@@ -52,6 +56,9 @@ Base.@kwdef struct GridParameters
     patchOffsetL::int = (spectralIndexL - 1) * 3
     patchOffsetR::int = patchOffsetL + rDim
     tile_num::int = 0
+    r_incr_out::real = (xmax - xmin) / num_cells
+    l_incr_out::real = (ymax - ymin) / (rDim*2+1)
+    z_incr_out::real = (zmax - zmin) / zDim
 end
 
 # Include functions for implemented grids

@@ -71,11 +71,14 @@ function write_grid(grid::R_Grid, output_dir::String, tag::String)
     println("Writing $tag to $output_dir")
     afilename = string(output_dir, "spectral_out_", tag, ".csv")
     ufilename = string(output_dir, "physical_out_", tag, ".csv")
+    rfilename = string(output_dir, "gridded_out_", tag, ".csv")
     afile = open(afilename,"w")
     ufile = open(ufilename,"w")
+    rfile = open(rfilename,"w")
 
     aheader = "r,"
     uheader = "r,"
+    rheader = "r,"
     suffix = ["","_r","_rr"]
     for d = 1:3
         for var in keys(grid.params.vars)
@@ -88,8 +91,10 @@ function write_grid(grid::R_Grid, output_dir::String, tag::String)
     end
     aheader = chop(aheader) * "\n"
     uheader = chop(uheader) * "\n"
+    rheader = chop(rheader) * "\n"
     write(afile,aheader)
     write(ufile,uheader)
+    write(rfile,uheader)
     
     for r = 1:grid.params.b_rDim
         astring = "$r,"
@@ -117,6 +122,24 @@ function write_grid(grid::R_Grid, output_dir::String, tag::String)
         write(ufile,ustring)
     end
     close(ufile)
+
+    # Get regular grid
+    gridpoints = getRegularGridpoints(grid)
+    regular_grid = regularGridTransform(grid, gridpoints)
+    for r = 1:length(gridpoints)
+        rstring = "$(gridpoints[r]),"
+        for d = 1:3
+            for var in keys(grid.params.vars)
+                v = grid.params.vars[var]
+                u = regular_grid[r,v,d]
+                rstring *= "$u,"
+            end
+        end
+        rstring = chop(rstring) * "\n"
+        write(rfile,rstring)
+    end
+    close(rfile)
+    
 end
 
 function write_grid(grid::RZ_Grid, output_dir::String, tag::String)
@@ -275,8 +298,8 @@ function write_grid(grid::RL_Grid, output_dir::String, tag::String)
     close(ufile)
     
     # Get regular grid
-    regular_grid = regularGridTransform(grid)
     gridpoints = getRegularGridpoints(grid)
+    regular_grid = regularGridTransform(grid)
     for r = 1:grid.params.num_cells
         for l = 1:(grid.params.rDim*2+1)
             rstring = "$(gridpoints[r,l,1]),$(gridpoints[r,l,2]),$(gridpoints[r,l,3]),$(gridpoints[r,l,4]),"
@@ -414,3 +437,4 @@ function write_grid(grid::RLZ_Grid, output_dir::String, tag::String)
     close(rfile)
 
 end
+
