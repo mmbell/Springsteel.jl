@@ -12,6 +12,9 @@ const real = Float64
 const int = Int64
 const uint = UInt64
 
+# Only one boundary condition allowed for Fourier
+const PERIODIC = Dict("PERIODIC" => 0)
+
 # Define the ring parameters
 Base.@kwdef struct FourierParameters
     ymin::real = 0.0 # Offset for the position of the first grid point

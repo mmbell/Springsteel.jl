@@ -1231,15 +1231,19 @@ end
 function getRegularGridpoints(grid::RL_Grid)
 
     # Return an array of the gridpoint locations
-    gridpoints = zeros(Float64, grid.params.num_cells, (grid.params.rDim*2+1), 4)
-    for r = 1:grid.params.num_cells
-        r_m = grid.params.xmin + (r-1)*grid.splines[1,1].params.DX
-        for l = 1:(grid.params.rDim*2+1)
-            l_m = 2 * π * (l-1) / (grid.params.rDim*2+1)
-            gridpoints[r,l,1] = r_m
-            gridpoints[r,l,2] = l_m
-            gridpoints[r,l,3] = r_m * cos(l_m)
-            gridpoints[r,l,4] = r_m * sin(l_m)
+    num_r_gridpoints = Int64(ceil((grid.params.xmax - grid.params.xmin) / grid.params.r_incr_out)) + 1
+    num_l_gridpoints = Int64(ceil((grid.params.ymax - grid.params.ymin) / grid.params.l_incr_out)) + 1
+    gridpoints = zeros(Float64, num_r_gridpoints * num_l_gridpoints, 4)
+    i = 1
+    for r = 1:num_r_gridpoints
+        r_m = grid.params.xmin + (r-1)*grid.params.r_incr_out
+        for l = 1:num_l_gridpoints
+            l_m = grid.params.ymin + (l-1)*grid.params.l_incr_out
+            gridpoints[i,1] = r_m
+            gridpoints[i,2] = l_m
+            gridpoints[i,3] = r_m * cos(l_m)
+            gridpoints[i,4] = r_m * sin(l_m)
+            i += 1
         end
     end
     return gridpoints

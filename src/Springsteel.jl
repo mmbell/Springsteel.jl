@@ -57,7 +57,9 @@ Base.@kwdef struct GridParameters
     patchOffsetR::int = patchOffsetL + rDim
     tile_num::int = 0
     r_incr_out::real = (xmax - xmin) / num_cells
-    l_incr_out::real = (ymax - ymin) / (rDim*2+1)
+    # The default l_increment is the maximum number of wavenumbers on the outermost ring
+    # The code will probably break if you change this for RL or RLZ grids
+    l_incr_out::real = (ymax - ymin) / (rDim*2+1) 
     z_incr_out::real = (zmax - zmin) / zDim
 end
 

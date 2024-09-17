@@ -300,19 +300,17 @@ function write_grid(grid::RL_Grid, output_dir::String, tag::String)
     # Get regular grid
     gridpoints = getRegularGridpoints(grid)
     regular_grid = regularGridTransform(grid)
-    for r = 1:grid.params.num_cells
-        for l = 1:(grid.params.rDim*2+1)
-            rstring = "$(gridpoints[r,l,1]),$(gridpoints[r,l,2]),$(gridpoints[r,l,3]),$(gridpoints[r,l,4]),"
-            for d = 1:5
-                for var in keys(grid.params.vars)
-                    v = grid.params.vars[var]
-                    u = regular_grid[r,l,v,d]
-                    rstring *= "$u,"
-                end
+    for i in eachindex(gridpoints[:,1])
+        rstring = "$(gridpoints[i,1]),$(gridpoints[i,2]),$(gridpoints[i,3]),$(gridpoints[i,4]),"
+        for d = 1:5
+            for var in keys(grid.params.vars)
+                v = grid.params.vars[var]
+                u = regular_grid[i,v,d]
+                rstring *= "$u,"
             end
-            rstring = chop(rstring) * "\n"
-            write(rfile,rstring)
         end
+        rstring = chop(rstring) * "\n"
+        write(rfile,rstring)
     end
     close(rfile)
     
@@ -420,8 +418,8 @@ function write_grid(grid::RLZ_Grid, output_dir::String, tag::String)
     close(ufile)
 
     # Get regular grid
-    regular_grid = regularGridTransform(grid)
     gridpoints = getRegularGridpoints(grid)
+    regular_grid = regularGridTransform(grid)
     for i in eachindex(gridpoints[:,1])
         rstring = "$(gridpoints[i,1]),$(gridpoints[i,2]),$(gridpoints[i,3]),$(gridpoints[i,4]),$(gridpoints[i,5]),"
         for d = 1:7
@@ -437,4 +435,3 @@ function write_grid(grid::RLZ_Grid, output_dir::String, tag::String)
     close(rfile)
 
 end
-
