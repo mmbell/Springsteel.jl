@@ -202,9 +202,9 @@ function tileTransform!(patchSplines::Array{Spline1D}, patchSpectral::Array{Floa
         patchSplines[i].a .= view(patchSpectral,:,i)
 
         # Assign to the tile grid
-        SItransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,1,1))
-        SIxtransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,1,2))
-        SIxxtransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,1,3))
+        SItransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,i,1))
+        SIxtransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,i,2))
+        SIxxtransform(patchSplines[i],getGridpoints(tile),view(tile.physical,:,i,3))
     end
 
     return tile.physical
