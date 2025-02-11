@@ -20,7 +20,18 @@ include("Chebyshev.jl")
 using .CubicBSpline, .Fourier, .Chebyshev
 
 export AbstractGrid, GridParameters
-export CubicBSpline, Chebyshev
+export CubicBSpline, SplineParameters, Spline1D
+export SBtransform, SBtransform!, SAtransform!, SItransform!
+export SAtransform, SBxtransform, SItransform, SIxtransform, SIxxtransform
+
+export FourierParameters, Fourier1D
+export FBtransform, FBtransform!, FAtransform!, FItransform!
+export FBxtransform, FIxtransform, FIxxtransform
+
+export Chebyshev, ChebyshevParameters, Chebyshev1D
+export CBtransform, CBtransform!, CAtransform!, CItransform!
+export CBxtransform, CIxtransform, CIxxtransform, CIInttransform
+
 export SplineParameters, Spline1D
 export createGrid, getGridpoints, calcTileSizes
 export read_physical_grid, write_grid
@@ -42,7 +53,7 @@ Base.@kwdef struct GridParameters
     lDim::int = 0
     b_lDim::int = 0
     BCU::Dict = Fourier.PERIODIC
-    BCB::Dict = Fourier.PERIODIC
+    BCD::Dict = Fourier.PERIODIC
     zmin::real = 0.0
     zmax::real = 0.0
     zDim::int = 0
