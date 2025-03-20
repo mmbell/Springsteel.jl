@@ -34,7 +34,7 @@ const PERIODIC = Dict("PERIODIC" => 0)
 
 # Fix the mish to 3 points
 const mubar = 3
-const gaussweight = [8.0/18.0, 5.0/18.0, 8.0/18.0]
+const gaussweight = [5.0/18.0, 8.0/18.0, 5.0/18.0]
 
 # Define the spline parameters
 Base.@kwdef struct SplineParameters
