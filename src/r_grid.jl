@@ -15,10 +15,16 @@ function create_R_Grid(gp::GridParameters)
     physical = zeros(Float64, gp.rDim, length(values(gp.vars)), 3)
     grid = R_Grid(gp, splines, spectral, physical)
     for key in keys(gp.vars)
+        # Allow for filter length to be variable specific
+        var_l_q = 2.0
+        if haskey(gp.l_q,key)
+            var_l_q = gp.l_q[key]
+        end
         grid.splines[1,gp.vars[key]] = Spline1D(SplineParameters(
             xmin = gp.xmin,
             xmax = gp.xmax,
             num_cells = gp.num_cells,
+            l_q = var_l_q,
             BCL = gp.BCL[key],
             BCR = gp.BCR[key]))
     end

@@ -20,11 +20,16 @@ function create_RZ_Grid(gp::GridParameters)
     physical = zeros(Float64, gp.zDim * gp.rDim, length(values(gp.vars)), 5)
     grid = RZ_Grid(gp, splines, columns, spectral, physical)
     for key in keys(gp.vars)
-
+        # Allow for spline filter length to be variable specific
+        var_l_q = 2.0
+        if haskey(gp.l_q,key)
+            var_l_q = gp.l_q[key]
+        end
         grid.splines[gp.vars[key]] = Spline1D(SplineParameters(
             xmin = gp.xmin,
             xmax = gp.xmax,
             num_cells = gp.num_cells,
+            l_q = var_l_q,
             BCL = gp.BCL[key],
             BCR = gp.BCR[key]))
 

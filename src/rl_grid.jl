@@ -52,12 +52,18 @@ function create_RL_Grid(gp::GridParameters)
     grid = RL_Grid(gp2, splines, rings, spectral, physical)
     for key in keys(gp2.vars)
 
+        # Allow for spline filter length to be variable specific
+        var_l_q = 2.0
+        if haskey(gp2.l_q,key)
+            var_l_q = gp2.l_q[key]
+        end
         # Need different BCs for wavenumber zero winds since they are undefined at r = 0
         for i = 1:3
             grid.splines[i,gp.vars[key]] = Spline1D(SplineParameters(
                 xmin = gp2.xmin,
                 xmax = gp2.xmax,
                 num_cells = gp2.num_cells,
+                l_q = var_l_q,
                 BCL = gp2.BCL[key],
                 BCR = gp2.BCR[key]))
         end

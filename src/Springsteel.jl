@@ -45,7 +45,7 @@ Base.@kwdef struct GridParameters
     num_cells::int = 0
     rDim::int = num_cells * CubicBSpline.mubar
     b_rDim::int = num_cells + 3
-    l_q::real = 2.0
+    l_q::Dict = Dict("default" => 2.0)
     BCL::Dict = CubicBSpline.R0
     BCR::Dict = CubicBSpline.R0
     ymin::real = 0.0
