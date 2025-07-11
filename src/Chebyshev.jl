@@ -102,8 +102,17 @@ end
 function calcFilterMatrix(cp::ChebyshevParameters)
 
     # Create a matrix to truncate the coefficients to bDim after Fourier transformation
-    filter = Matrix(1.0I, cp.bDim, cp.zDim)
-    return filter
+
+    if cp.bDim < cp.zDim
+        filter = Matrix(1.0I, cp.bDim, cp.zDim)
+        return filter
+    else
+        filter = Matrix(1.0I, cp.zDim, cp.zDim)
+        for i in 1:cp.zDim
+            filter[i,i] = exp(-36.0 * (i/cp.zDim)^36)
+        end
+        return filter
+    end
 end
 
 function CBtransform(cp::ChebyshevParameters, fftPlan, uMish::Vector{real})
@@ -138,7 +147,8 @@ end
 function CAtransform!(column::Chebyshev1D)
 
     # In place CA transform
-    bfill = column.filter' * column.b
+    bfill = [column.b ; zeros(Float64, column.params.zDim-column.params.bDim)]
+    #bfill = column.filter' * column.b
     a = bfill .+ (column.gammaBC' * bfill)
     column.a .= a
 end
@@ -658,6 +668,51 @@ function bvp_basis(x::Float64, nbasis::Int64, phi::Array{Float64}, phix::Array{F
     end
 
     return phi, phix, phixx
+end
+
+function evaluate_chebyshev(z, b)
+
+    dct = zeros(Float64,length(z), cp.zDim)
+    scale = -0.5 * (cp.zmax - cp.zmin)
+    offset = 0.5 * (cp.zmin + cp.zmax)
+    for i in 1:length(z)
+        t = acos((z[i] - offset)/scale)
+        # t = (i-1) * π / (Nbasis - 1)
+        for j = 1:cp.zDim
+            dct[i,j] = 2*cos((j-1)*t)
+        end
+    end
+    dct[:,1] *= 0.5
+    dct[:,cp.zDim] *= 0.5
+
+    column.b .= b
+    a = CAtransform!(column)
+    dct * a
+end
+
+function evaluate_chebyshev_1st_derivative(z, b)
+
+    dct = zeros(Float64,length(z), cp.zDim)
+    scale = -0.5 * (cp.zmax - cp.zmin)
+    offset = 0.5 * (cp.zmin + cp.zmax)
+    for i in 1:length(z)
+        t = acos((z[i] - offset)/scale)
+        # t = (i-1) * π / (Nbasis - 1)
+        for j = 1:cp.zDim
+            N = j-1
+            if (i == 1)
+                dct[i,j] = -N*N
+            elseif (i == cp.zDim)
+                dct[i,j] = -N*N*(-1.0)^(N+1)
+            else
+                dct[i,j] = -N*sin(N*t)/sin(t)
+            end
+        end
+    end
+    dct = dct ./ ((cp.zmax - cp.zmin)/4.0)
+    column.b .= b
+    a = CAtransform!(column)
+    dct * a
 end
 
 end #module
