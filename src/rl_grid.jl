@@ -1125,25 +1125,28 @@ function regularGridTransform(grid::RL_Grid)
     # Output on regular grid
     # Transform from the spectral to grid space
     # For RZ grid, varying dimensions are R, Z, and variable
-    spline = zeros(Float64, grid.params.num_cells, grid.params.rDim*2+1)
-    spline_r = zeros(Float64, grid.params.num_cells, grid.params.rDim*2+1)
-    spline_rr = zeros(Float64, grid.params.num_cells, grid.params.rDim*2+1)
-    
-    physical = zeros(Float64, grid.params.num_cells, 
-        grid.params.rDim*2+1, 
+    num_r_gridpoints = Int64(ceil((grid.params.xmax - grid.params.xmin) / grid.params.r_incr_out)) + 1
+    num_l_gridpoints = Int64(ceil((grid.params.ymax - grid.params.ymin) / grid.params.l_incr_out))
+
+    spline = zeros(Float64, num_r_gridpoints, num_l_gridpoints)
+    spline_r = zeros(Float64, num_r_gridpoints, num_l_gridpoints)
+    spline_rr = zeros(Float64, num_r_gridpoints, num_l_gridpoints)
+
+    physical = zeros(Float64, num_r_gridpoints, num_l_gridpoints,
         length(values(grid.params.vars)),5)
 
+    kmax_ring = Int64(floor((num_l_gridpoints - 1)/2))
     # Generic ring of maximum size
     ring = Fourier1D(FourierParameters(
         ymin = 0.0,
-        yDim = grid.params.rDim*2 + 1,
-        bDim = grid.params.rDim*2 + 1,
-        kmax = grid.params.rDim))
+        yDim = num_l_gridpoints,
+        bDim = num_l_gridpoints,
+        kmax = kmax_ring))
 
     # Output on the nodes
-    rpoints = zeros(Float64, grid.params.num_cells)
-    for r = 1:grid.params.num_cells
-        rpoints[r] = grid.params.xmin + (r-1)*grid.splines[1,1].params.DX
+    rpoints = zeros(Float64, num_r_gridpoints)
+    for r = 1:num_r_gridpoints
+        rpoints[r] = grid.params.xmin + (r-1)*grid.params.r_incr_out
     end
     
     for v in values(grid.params.vars)
@@ -1188,7 +1191,7 @@ function regularGridTransform(grid::RL_Grid)
             end
             FAtransform!(ring)
             l1 = 1
-            l2 = ring.params.yDim
+            l2 = num_l_gridpoints
             physical[r,l1:l2,v,1] .= FItransform!(ring)
             physical[r,l1:l2,v,4] .= FIxtransform(ring)
             physical[r,l1:l2,v,5] .= FIxxtransform(ring)
@@ -1207,7 +1210,7 @@ function regularGridTransform(grid::RL_Grid)
             end
             FAtransform!(ring)
             l1 = 1
-            l2 = ring.params.yDim
+            l2 = num_l_gridpoints
             physical[r,l1:l2,v,2] .= FItransform!(ring)
             
             #drr
@@ -1224,7 +1227,7 @@ function regularGridTransform(grid::RL_Grid)
             end
             FAtransform!(ring)
             l1 = 1
-            l2 = ring.params.yDim
+            l2 = num_l_gridpoints
             physical[r,l1:l2,v,3] .= FItransform!(ring)
 
         end
@@ -1238,18 +1241,17 @@ function getRegularGridpoints(grid::RL_Grid)
 
     # Return an array of the gridpoint locations
     num_r_gridpoints = Int64(ceil((grid.params.xmax - grid.params.xmin) / grid.params.r_incr_out)) + 1
-    num_l_gridpoints = Int64(ceil((grid.params.ymax - grid.params.ymin) / grid.params.l_incr_out)) + 1
-    gridpoints = zeros(Float64, num_r_gridpoints * num_l_gridpoints, 4)
+    num_l_gridpoints = Int64(ceil((grid.params.ymax - grid.params.ymin) / grid.params.l_incr_out))
+    gridpoints = zeros(Float64, num_r_gridpoints, num_l_gridpoints, 4)
     i = 1
     for r = 1:num_r_gridpoints
         r_m = grid.params.xmin + (r-1)*grid.params.r_incr_out
         for l = 1:num_l_gridpoints
             l_m = grid.params.ymin + (l-1)*grid.params.l_incr_out
-            gridpoints[i,1] = r_m
-            gridpoints[i,2] = l_m
-            gridpoints[i,3] = r_m * cos(l_m)
-            gridpoints[i,4] = r_m * sin(l_m)
-            i += 1
+            gridpoints[r,l,1] = r_m
+            gridpoints[r,l,2] = l_m
+            gridpoints[r,l,3] = r_m * cos(l_m)
+            gridpoints[r,l,4] = r_m * sin(l_m)
         end
     end
     return gridpoints
