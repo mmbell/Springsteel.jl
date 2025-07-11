@@ -31,6 +31,7 @@ function create_RL_Grid(gp::GridParameters)
         l_q = gp.l_q,
         BCL = gp.BCL,
         BCR = gp.BCR,
+        kmax = gp.kmax,
         lDim = lpoints,
         b_lDim = blpoints,
         zmin = gp.zmin,
@@ -68,17 +69,28 @@ function create_RL_Grid(gp::GridParameters)
                 BCR = gp2.BCR[key]))
         end
 
+        # Allow for Fourier filter to be variable specific
+        var_kmax = -1
+        if haskey(gp2.kmax,key)
+            var_kmax = gp2.kmax[key]
+        end
         for r = 1:gp2.rDim
             ri = r + gp2.patchOffsetL
             lpoints = 4 + 4*ri
             dl = 2 * π / lpoints
             offset = 0.5 * dl * (ri-1)
+            # Default is to use the maximum wavenumber for the ring
+            kmax_ring = ri
+            if var_kmax > 0
+                # User override the maximum wavenumber, but don't exceed the ring size
+                kmax_ring = min(var_kmax, ri)
+            end
             grid.rings[r,gp2.vars[key]] = Fourier1D(FourierParameters(
                 ymin = offset,
                 # ymax = offset + (2 * π) - dl,
                 yDim = lpoints,
-                bDim = ri*2 + 1,
-                kmax = ri))
+                kmax = kmax_ring,
+                bDim = ri*2 + 1))
         end
     end
     return grid

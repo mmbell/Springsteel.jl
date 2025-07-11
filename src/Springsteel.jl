@@ -50,6 +50,7 @@ Base.@kwdef struct GridParameters
     BCR::Dict = CubicBSpline.R0
     ymin::real = 0.0
     ymax::real = 2 * π
+    kmax::Dict = Dict("default" => -1) # Default is -1 to indicate ring specific
     lDim::int = 0
     b_lDim::int = 0
     BCU::Dict = Fourier.PERIODIC
